@@ -29,18 +29,69 @@
   <body>
     <!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <div class="container" style="width: 95%; height: 100%">
-      <div class="row" style="height: 100%">
-        <div class="one-third column" style="margin-top: 25%">
-          <h4><b>Chat</b>, powered by Durable Objects</h4>
-          <p>
-            This chat room is hosted in a single Durable Object, running in one
-            process in one machine in one location, very close to the users.
-          </p>
-        </div>
-        <div class="two-thirds column" id="root"></div>
-      </div>
+    <div class="container" id="form-container">
+      <h4>Welcome to the Chat!</h4>
+      <p>Please provide your details to continue:</p>
+      <form id="user-form">
+        <label for="email">UC Email:</label>
+        <input type="email" id="email" name="email" placeholder="example@uc.edu" required />
+        <label for="name">Real Name:</label>
+        <input type="text" id="name" name="name" placeholder="Your Full Name" required />
+        <label for="ID/PID">Enter your Student ID:</label>
+        <input type="text" id="ID/PID" name="ID/PID" placeholder="Your Student ID" required />
+        <button type="submit">Enter Chat</button>
+      </form>
     </div>
+
+    <div class="container" id="chat-container" style="display: none;">
+      <h4>Chat Room</h4>
+      <div id="chat-box"></div>
+      <input type="text" id="chat-input" placeholder="Type your message..." />
+      <button id="send-button">Send</button>
+    </div>
+
+    <!-- JavaScript Logic
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <script>
+      const form = document.getElementById("user-form");
+      const formContainer = document.getElementById("form-container");
+      const chatContainer = document.getElementById("chat-container");
+
+      // List of valid UC email domains
+      const validDomains = [
+        "@ucla.edu", "@berkeley.edu", "@ucsd.edu", "@uci.edu",
+        "@ucdavis.edu", "@ucsf.edu", "@ucr.edu", "@ucsc.edu", "@ucmerced.edu"
+      ];
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const name = document.getElementById("name").value;
+        const pid = document.getElementById("ID/PID").value;
+
+        // Validate UC email
+        if (!validDomains.some(domain => email.endsWith(domain))) {
+          alert("Please use a valid UC email address.");
+          return;
+        }
+
+        // Send user details to the server
+        const response = await fetch("/validate-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name, pid }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          formContainer.style.display = "none";
+          chatContainer.style.display = "block";
+        } else {
+          alert(result.message);
+        }
+      });
+    </script>
 
     <!-- End Document
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
